@@ -2,6 +2,13 @@
 GPS NMEA Recorder for M5Stack.   
 You can record & play NMEA messages like a voice recorder.   
 
+# Background
+I live in an apartment.   
+GPS signal does not reach my room.   
+So, I walk outside with M5Stack and record the NMEA message.   
+Return my house and play the NMEA message recorded on M5Stack.   
+M5Stack works like GPS.   
+
 ---
 
 # Hardware requirements
