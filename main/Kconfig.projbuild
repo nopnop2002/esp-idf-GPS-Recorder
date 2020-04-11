@@ -1,0 +1,28 @@
+menu "Application Configuration"
+
+	config UART_RXD_GPIO
+		int "GPS RX GPIO number"
+		range 1 34
+		default 22
+		help
+			GPIO number (IOxx) for GPS RXD.
+			Some GPIOs are used for other purposes (flash connections, etc.) and cannot be used to RXD.
+
+	config UART_TXD_GPIO
+		int "PLAYBACK TX GPIO number"
+		range 1 34
+		default 21
+		help
+			GPIO number (IOxx) for PLAYBACK TXD.
+			Some GPIOs are used for other purposes (flash connections, etc.) and cannot be used to TXD.
+
+	config PLAYBACK_PERIOD
+		int "PLAYBACK period [mSec]"
+		range 100 1000
+		default 200
+		help
+			PLAYBACK period.
+
+endmenu
+
+
