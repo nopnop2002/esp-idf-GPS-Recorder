@@ -87,8 +87,6 @@ typedef struct {
 
 static QueueHandle_t xQueueCmd;
 static QueueHandle_t uart0_queue;
-TimerHandle_t xTimer;
-
 
 static void uart_event_task(void *pvParameters)
 {
@@ -698,16 +696,19 @@ void app_main()
 	ESP_LOGI(TAG, "Initializing UART done");
 
 
-	/* Create Queue */
+	// Create Queue
 	xQueueCmd = xQueueCreate( 10, sizeof(CMD_t) );
 	configASSERT( xQueueCmd );
 
-	xTaskCreate(buttonA, "B-A", 1024*2, NULL, 2, NULL);
-	xTaskCreate(buttonB, "B-B", 1024*2, NULL, 2, NULL);
-	xTaskCreate(buttonC, "B-C", 1024*2, NULL, 2, NULL);
+	// Create task
+	xTaskCreate(buttonA, "BUTTON-A", 1024*2, NULL, 2, NULL);
+	xTaskCreate(buttonB, "BUTTON-B", 1024*2, NULL, 2, NULL);
+	xTaskCreate(buttonC, "BUTTON-C", 1024*2, NULL, 2, NULL);
 	xTaskCreate(tft, "TFT", 1024*4, NULL, 5, NULL);
 	//Create a task to handler UART event from ISR
 	xTaskCreate(uart_event_task, "uart_event", 1024*4, NULL, 5, NULL);
+
+	// Create timer
 	TimerHandle_t xTimer = xTimerCreate("TIMER", CONFIG_PLAYBACK_PERIOD / portTICK_RATE_MS, true, NULL, send_timercb);
 	//TimerHandle_t xTimer = xTimerCreate("TIMER", 1000 / portTICK_RATE_MS, true, NULL, send_timercb);
 	xTimerStart(xTimer, 0);
