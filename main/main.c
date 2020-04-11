@@ -343,7 +343,7 @@ bool readLog(LOG_t *log, uint8_t * payload, size_t * length, size_t payloadSize)
 	if (fgets((char *)payload, payloadSize, log->f) != NULL) {
 		*length = strlen((char *)payload) - 1;
 		payload[*length] = 0;
-		ESP_LOGI(TAG,"readLog payload=[%s] length=%d", (char*)payload, *length);
+		ESP_LOGD(TAG,"readLog payload=[%s] length=%d", (char*)payload, *length);
 		return true;
 	} else {
 		ESP_LOGW(TAG, "End of file reached");
@@ -596,8 +596,8 @@ void tft(void *pvParameters)
 			int loop = (cmdBuf.length+DISPLAY_LENGTH) / DISPLAY_LENGTH;
 			int index = 0;
 			for(int i=0;i<loop;i++) {
+				memset((char *)ascii, 0, sizeof(ascii));
 				memcpy((char *)ascii, (char *)&(cmdBuf.payload[index]), DISPLAY_LENGTH);
-				ascii[DISPLAY_LENGTH] = 0;
 				index = index + DISPLAY_LENGTH;
 
 				if (current < lines) {
