@@ -42,7 +42,7 @@ NMEA messages are recorded in SPIFFS.
 You can use GROVE port as UART RXD.   
 SCL of GROVE(Yellow) is GPIO22.   
 SDA of GROVE(White) is GPIO21.   
-You can choice UART RXD GPIO using menuconfig.   
+You can choice GPS RX GPIO using menuconfig.   
 
 ## Operation   
 Displays NMEA messages and signal status.   
@@ -56,19 +56,19 @@ Press button A(Left button) again to stop the recording.
 # Playback   
 Outputs the NMEA message recorded in SPIFFS to UART TXD.   
 
-## Wireing to GPS   
+## Wireing to TARGET   
 You can use GROVE port as UART TXD.   
 SCL of GROVE(Yellow) is GPIO22.   
 SDA of GROVE(White) is GPIO21.   
-You can choice UART TXD GPIO using menuconfig.   
+You can choice PLAYBACK TX GPIO using menuconfig.   
 
 ## Operation   
-Press button B(Center button) to start playback in repeat mode.
+Press button B(Center button) to start playback in repeat mode.   
 Press button C(Right button) to stop the playback.   
 ![Playback-Repeat](https://user-images.githubusercontent.com/6020549/79033596-4f3a3580-7bea-11ea-84ad-9b37d2dbf7b8.JPG)
 
 
-Press button B(Center button) for 2 seconds or more to start playback once.
+Press button B(Center button) for 2 seconds or more to start playback once.   
 Press button C(Right button) to stop the playback.   
 ![Playback-Once](https://user-images.githubusercontent.com/6020549/79033601-5a8d6100-7bea-11ea-987d-875087a71c2d.JPG)
 
