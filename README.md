@@ -27,8 +27,8 @@ Because uart_enable_pattern_det_intr() has been changed to uart_enable_pattern_d
 ```
 git clone https://github.com/nopnop2002/esp-idf-GPS-Recorder
 cd esp-idf-GPS-Recorder
-make menuconfig
-make install
+idf.py menuconfig
+idf.py flash
 ```
 
 ---
