@@ -9,19 +9,13 @@ So, I walk outside with M5Stack and record the NMEA message.
 Return my room and play the NMEA message recorded on M5Stack.   
 M5Stack works like GPS.   
 
----
-
 # Hardware requirements
 M5Stack.  
 GPS module like NEO-6M.
 
----
-
 # Software requirements
-esp-idf ver4.1 or later.   
-Because uart_enable_pattern_det_intr() has been changed to uart_enable_pattern_det_baud_intr().
-
----
+ESP-IDF V5.0 or later.   
+ESP-IDF V4.4 release branch reached EOL in July 2024.   
 
 # Install
 ```
@@ -31,16 +25,13 @@ idf.py menuconfig
 idf.py flash
 ```
 
----
-
-# Configure
+# Configuration
 You can configure using menuconfig.
 
 ![config-1](https://user-images.githubusercontent.com/6020549/79033541-e488fa00-7be9-11ea-8550-f17f6dcfaaca.jpg)
 
 ![config-2](https://user-images.githubusercontent.com/6020549/79033544-e783ea80-7be9-11ea-9719-27720609e9a4.jpg)
 
----
 
 # Recording   
 NMEA messages are recorded in SPIFFS.   

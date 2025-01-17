@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <inttypes.h>
 #include <string.h>
 #include <sys/unistd.h>
 #include <sys/stat.h>
@@ -210,11 +211,11 @@ bool GetFontx(FontxFile *fxs, uint8_t ascii , uint8_t *pGlyph, uint8_t *pw, uint
 		//if(ascii < 0x100){
 		if(ascii < 0x80){
 			if(fxs[i].is_ank){
-if(FontxDebug)printf("[GetFontx]fxs.is_ank fxs.fsz=%d\n",fxs[i].fsz);
+				if(FontxDebug)printf("[GetFontx]fxs.is_ank fxs.fsz=%d\n",fxs[i].fsz);
 				offset = 17 + ascii * fxs[i].fsz;
-if(FontxDebug)printf("[GetFontx]offset=%d\n",offset);
+				if(FontxDebug)printf("[GetFontx]offset=%"PRIu32"\n",offset);
 				if(fseek(fxs[i].file, offset, SEEK_SET)) {
-					printf("Fontx:seek(%u) failed.\n",offset);
+					printf("Fontx:seek(%"PRIu32") failed.\n",offset);
 					return false;
 				}
 				if(fread(pGlyph, 1, fxs[i].fsz, fxs[i].file) != fxs[i].fsz) {
@@ -241,7 +242,7 @@ if(FontxDebug)printf("[GetFontx]offset=%d\n",offset);
 						printf("Fontx:fread failed.\n");
 						return false;
 					}
-if(FontxDebug)printf("[GetFontx]buf=0x%x-0x%x\n",buf[0],buf[1]);
+					if(FontxDebug)printf("[GetFontx]buf=0x%x-0x%x\n",buf[0],buf[1]);
 					if(sjis >= buf[0] && sjis <= buf[1]) {
 						nc += sjis - buf[0];
 						offset = 18 + fxs[i].bc * 4 + nc * fxs[i].fsz;

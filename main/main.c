@@ -90,8 +90,8 @@ static QueueHandle_t uart0_queue;
 
 static void uart_event_task(void *pvParameters)
 {
-	ESP_LOGI(pcTaskGetTaskName(0), "Start");
-	esp_log_level_set(pcTaskGetTaskName(0), ESP_LOG_WARN);
+	ESP_LOGI(pcTaskGetName(NULL), "Start");
+	esp_log_level_set(pcTaskGetName(NULL), ESP_LOG_WARN);
 
 	uart_event_t event;
 	size_t buffered_size;
@@ -102,20 +102,20 @@ static void uart_event_task(void *pvParameters)
 
 	for(;;) {
 		//Waiting for UART event.
-		if(xQueueReceive(uart0_queue, (void * )&event, (portTickType)portMAX_DELAY)) {
+		if(xQueueReceive(uart0_queue, (void * )&event, portMAX_DELAY)) {
 			bzero(rxdata, RX_BUF_SIZE);
-			ESP_LOGI(pcTaskGetTaskName(0), "uart[%d] event:", UART_NUM_1);
+			ESP_LOGI(pcTaskGetName(NULL), "uart[%d] event:", UART_NUM_1);
 			switch(event.type) {
 				//Event of UART receving data
 				/*We'd better handler data event fast, there would be much more data events than
 				other types of events. If we take too much time on data event, the queue might
 				be full.*/
 				case UART_DATA:
-					ESP_LOGI(pcTaskGetTaskName(0), "[UART DATA]: %d", event.size);
+					ESP_LOGI(pcTaskGetName(NULL), "[UART DATA]: %d", event.size);
 					break;
 				//Event of HW FIFO overflow detected
 				case UART_FIFO_OVF:
-					ESP_LOGW(pcTaskGetTaskName(0), "hw fifo overflow");
+					ESP_LOGW(pcTaskGetName(NULL), "hw fifo overflow");
 					// If fifo overflow happened, you should consider adding flow control for your application.
 					// The ISR has already reset the rx FIFO,
 					// As an example, we directly flush the rx buffer here in order to read more data.
@@ -124,7 +124,7 @@ static void uart_event_task(void *pvParameters)
 					break;
 				//Event of UART ring buffer full
 				case UART_BUFFER_FULL:
-					ESP_LOGW(pcTaskGetTaskName(0), "ring buffer full");
+					ESP_LOGW(pcTaskGetName(NULL), "ring buffer full");
 					// If buffer full happened, you should consider encreasing your buffer size
 					// As an example, we directly flush the rx buffer here in order to read more data.
 					uart_flush_input(UART_NUM_1);
@@ -132,21 +132,21 @@ static void uart_event_task(void *pvParameters)
 					break;
 				//Event of UART RX break detected
 				case UART_BREAK:
-					ESP_LOGW(pcTaskGetTaskName(0), "uart rx break");
+					ESP_LOGW(pcTaskGetName(NULL), "uart rx break");
 					break;
 				//Event of UART parity check error
 				case UART_PARITY_ERR:
-					ESP_LOGW(pcTaskGetTaskName(0), "uart parity error");
+					ESP_LOGW(pcTaskGetName(NULL), "uart parity error");
 					break;
 				//Event of UART frame error
 				case UART_FRAME_ERR:
-					ESP_LOGW(pcTaskGetTaskName(0), "uart frame error");
+					ESP_LOGW(pcTaskGetName(NULL), "uart frame error");
 					break;
 				//UART_PATTERN_DET
 				case UART_PATTERN_DET:
 					uart_get_buffered_data_len(UART_NUM_1, &buffered_size);
 					int pos = uart_pattern_pop_pos(UART_NUM_1);
-					ESP_LOGI(pcTaskGetTaskName(0), "[UART PATTERN DETECTED] pos: %d, buffered size: %d", pos, buffered_size);
+					ESP_LOGI(pcTaskGetName(NULL), "[UART PATTERN DETECTED] pos: %d, buffered size: %d", pos, buffered_size);
 					if (pos == -1) {
 						// There used to be a UART_PATTERN_DET event, but the pattern position queue is full so that it can not
 						// record the position. We should set a larger queue size.
@@ -155,9 +155,9 @@ static void uart_event_task(void *pvParameters)
 					} else {
 						uart_read_bytes(UART_NUM_1, rxdata, buffered_size, 100 / portTICK_PERIOD_MS);
 						// Data ends with 0x0d 0x0a
-						ESP_LOGI(pcTaskGetTaskName(0), "rxdata=[%s]", rxdata);
-						ESP_LOGI(pcTaskGetTaskName(0), "rxdata=0x%x", rxdata[buffered_size-2]);
-						ESP_LOGI(pcTaskGetTaskName(0), "rxdata=0x%x", rxdata[buffered_size-1]);
+						ESP_LOGI(pcTaskGetName(NULL), "rxdata=[%s]", rxdata);
+						ESP_LOGI(pcTaskGetName(NULL), "rxdata=0x%x", rxdata[buffered_size-2]);
+						ESP_LOGI(pcTaskGetName(NULL), "rxdata=0x%x", rxdata[buffered_size-1]);
 						//cmdBuf.length = buffered_size;
 						//memcpy((char *)cmdBuf.payload, (char *)rxdata, buffered_size); 
 						//cmdBuf.payload[buffered_size] = 0;
@@ -170,7 +170,7 @@ static void uart_event_task(void *pvParameters)
 					break;
 				//Others
 				default:
-					ESP_LOGW(pcTaskGetTaskName(0), "uart event type: %d", event.type);
+					ESP_LOGW(pcTaskGetName(NULL), "uart event type: %d", event.type);
 					break;
 			}
 		}
@@ -183,19 +183,19 @@ static void uart_event_task(void *pvParameters)
 
 void buttonA(void *pvParameters)
 {
-	ESP_LOGI(pcTaskGetTaskName(0), "Start");
+	ESP_LOGI(pcTaskGetName(NULL), "Start");
 	CMD_t cmdBuf;
 	cmdBuf.command = CMD_START_RECORD;
 	cmdBuf.taskHandle = xTaskGetCurrentTaskHandle();
 
 	// set the GPIO as a input
-	gpio_pad_select_gpio(GPIO_INPUT_A);
+	gpio_reset_pin(GPIO_INPUT_A);
 	gpio_set_direction(GPIO_INPUT_A, GPIO_MODE_DEF_INPUT);
 
 	while(1) {
 		int level = gpio_get_level(GPIO_INPUT_A);
 		if (level == 0) {
-			ESP_LOGI(pcTaskGetTaskName(0), "Push Button");
+			ESP_LOGI(pcTaskGetName(NULL), "Push Button");
 			while(1) {
 				level = gpio_get_level(GPIO_INPUT_A);
 				if (level == 1) break;
@@ -204,7 +204,7 @@ void buttonA(void *pvParameters)
 
 			// Post an item to the front of a queue.
 			if (xQueueSendToFront(xQueueCmd, &cmdBuf, portMAX_DELAY) != pdPASS) {
-				ESP_LOGE(pcTaskGetTaskName(0), "xQueueSend Fail");
+				ESP_LOGE(pcTaskGetName(NULL), "xQueueSend Fail");
 			}
 			if (cmdBuf.command == CMD_START_RECORD) {
 				cmdBuf.command = CMD_STOP_RECORD;
@@ -218,19 +218,19 @@ void buttonA(void *pvParameters)
 
 void buttonB(void *pvParameters)
 {
-	ESP_LOGI(pcTaskGetTaskName(0), "Start");
+	ESP_LOGI(pcTaskGetName(NULL), "Start");
 	CMD_t cmdBuf;
 	//cmdBuf.command = CMD_START_PLAYBACK_REPEAT;
 	cmdBuf.taskHandle = xTaskGetCurrentTaskHandle();
 
 	// set the GPIO as a input
-	gpio_pad_select_gpio(GPIO_INPUT_B);
+	gpio_reset_pin(GPIO_INPUT_B);
 	gpio_set_direction(GPIO_INPUT_B, GPIO_MODE_DEF_INPUT);
 
 	while(1) {
 		int level = gpio_get_level(GPIO_INPUT_B);
 		if (level == 0) {
-			ESP_LOGI(pcTaskGetTaskName(0), "Push Button");
+			ESP_LOGI(pcTaskGetName(NULL), "Push Button");
 			TickType_t startTick = xTaskGetTickCount();
 			while(1) {
 				level = gpio_get_level(GPIO_INPUT_B);
@@ -244,7 +244,7 @@ void buttonB(void *pvParameters)
 
 			// Post an item to the front of a queue.
 			if (xQueueSendToFront(xQueueCmd, &cmdBuf, portMAX_DELAY) != pdPASS) {
-				ESP_LOGE(pcTaskGetTaskName(0), "xQueueSend Fail");
+				ESP_LOGE(pcTaskGetName(NULL), "xQueueSend Fail");
 			}
 		}
 		vTaskDelay(1);
@@ -253,19 +253,19 @@ void buttonB(void *pvParameters)
 
 void buttonC(void *pvParameters)
 {
-	ESP_LOGI(pcTaskGetTaskName(0), "Start");
+	ESP_LOGI(pcTaskGetName(NULL), "Start");
 	CMD_t cmdBuf;
 	cmdBuf.command = CMD_STOP_PLAYBACK;
 	cmdBuf.taskHandle = xTaskGetCurrentTaskHandle();
 
 	// set the GPIO as a input
-	gpio_pad_select_gpio(GPIO_INPUT_C);
+	gpio_reset_pin(GPIO_INPUT_C);
 	gpio_set_direction(GPIO_INPUT_C, GPIO_MODE_DEF_INPUT);
 
 	while(1) {
 		int level = gpio_get_level(GPIO_INPUT_C);
 		if (level == 0) {
-			ESP_LOGI(pcTaskGetTaskName(0), "Push Button");
+			ESP_LOGI(pcTaskGetName(NULL), "Push Button");
 			while(1) {
 				level = gpio_get_level(GPIO_INPUT_C);
 				if (level == 1) break;
@@ -274,14 +274,15 @@ void buttonC(void *pvParameters)
 
 			// Post an item to the front of a queue.
 			if (xQueueSendToFront(xQueueCmd, &cmdBuf, portMAX_DELAY) != pdPASS) {
-				ESP_LOGE(pcTaskGetTaskName(0), "xQueueSend Fail");
+				ESP_LOGE(pcTaskGetName(NULL), "xQueueSend Fail");
 			}
 		}
 		vTaskDelay(1);
 	}
 }
 
-static void send_timercb(void *timer)
+// Timer callback
+static void send_timercb(TimerHandle_t xTimer)
 {
 	ESP_LOGD(TAG, "send_timercb");
 	CMD_t cmdBuf;
@@ -441,7 +442,7 @@ bool parse_nmea_rmc(RMC_t *rmc, uint8_t * payload, size_t length) {
 
 void tft(void *pvParameters)
 {
-	ESP_LOGI(pcTaskGetTaskName(0), "Start");
+	ESP_LOGI(pcTaskGetName(NULL), "Start");
 	// set font file
 	FontxFile fxG[2];
 	InitFontx(fxG,"/spiffs/ILGH24XB.FNT",""); // 12x24Dot Gothic
@@ -453,18 +454,18 @@ void tft(void *pvParameters)
 	uint8_t fontWidth;
 	uint8_t fontHeight;
 	GetFontx(fxG, 0, buffer, &fontWidth, &fontHeight);
-	ESP_LOGI(pcTaskGetTaskName(0), "fontWidth=%d fontHeight=%d",fontWidth,fontHeight);
+	ESP_LOGI(pcTaskGetName(NULL), "fontWidth=%d fontHeight=%d",fontWidth,fontHeight);
 
 	// Setup Screen
 	TFT_t dev;
 	spi_master_init(&dev, CS_GPIO, DC_GPIO, RESET_GPIO, BL_GPIO);
 	lcdInit(&dev, 0x9341, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0);
-	ESP_LOGI(pcTaskGetTaskName(0), "Setup Screen done");
+	ESP_LOGI(pcTaskGetName(NULL), "Setup Screen done");
 
 	int lines = (SCREEN_HEIGHT - fontHeight) / fontHeight;
-	ESP_LOGD(pcTaskGetTaskName(0), "SCREEN_HEIGHT=%d fontHeight=%d lines=%d", SCREEN_HEIGHT, fontHeight, lines);
+	ESP_LOGD(pcTaskGetName(NULL), "SCREEN_HEIGHT=%d fontHeight=%d lines=%d", SCREEN_HEIGHT, fontHeight, lines);
 	int ymax = (lines+1) * fontHeight;
-	ESP_LOGD(pcTaskGetTaskName(0), "ymax=%d",ymax);
+	ESP_LOGD(pcTaskGetName(NULL), "ymax=%d",ymax);
 
 	// Initial Screen
 	//uint8_t ascii[DISPLAY_LENGTH+1];
@@ -496,7 +497,7 @@ void tft(void *pvParameters)
 
 	while(1) {
 		xQueueReceive(xQueueCmd, &cmdBuf, portMAX_DELAY);
-		ESP_LOGD(pcTaskGetTaskName(0),"cmdBuf.command=%d isRecord=%d isPlayback=%d", cmdBuf.command, isRecord, isPlayback);
+		ESP_LOGD(pcTaskGetName(NULL),"cmdBuf.command=%d isRecord=%d isPlayback=%d", cmdBuf.command, isRecord, isPlayback);
 		if (cmdBuf.command == CMD_START_RECORD) {
 			if (isPlayback) continue;
 			if (openLogWrite(&log)) {
@@ -512,7 +513,7 @@ void tft(void *pvParameters)
 			closeLog(&log);
 			size_t total = 0, used = 0;
 			esp_spiffs_info(NULL, &total, &used);
-			ESP_LOGI(pcTaskGetTaskName(0),"Partition size: total: %d, used: %d", total, used);
+			ESP_LOGI(pcTaskGetName(NULL),"Partition size: total: %d, used: %d", total, used);
 			SPIFFS_Directory("/spiffs");
 			lcdDrawFillRect(&dev, xstatus, 0, SCREEN_WIDTH-1, fontHeight-1, BLACK);
 			strcpy((char *)ascii, "View");
@@ -520,8 +521,8 @@ void tft(void *pvParameters)
 			isRecord = false;
 			recordEndTick = xTaskGetTickCount();
 			TickType_t diffTick = recordEndTick - recordStartTick;
-			int recordingTime = (diffTick * portTICK_RATE_MS) / 1000;
-			ESP_LOGI(pcTaskGetTaskName(0),"Recording time is %d Sec", recordingTime);
+			int recordingTime = (diffTick * portTICK_PERIOD_MS) / 1000;
+			ESP_LOGI(pcTaskGetName(NULL),"Recording time is %d Sec", recordingTime);
 
 		} else if (cmdBuf.command == CMD_START_PLAYBACK_REPEAT) {
 			if (isPlayback) continue;
@@ -563,7 +564,7 @@ void tft(void *pvParameters)
 			if (cmdBuf.command == CMD_NMEA) {
 				RMC_t rmcBuf;
 				parse_nmea_rmc(&rmcBuf, cmdBuf.payload, cmdBuf.length);
-				ESP_LOGD(pcTaskGetTaskName(0),"_lat1=%s _lat2=%s _lon1=%s _lon2=%s", rmcBuf._lat1, rmcBuf._lat2, rmcBuf._lon1, rmcBuf._lon2);
+				ESP_LOGD(pcTaskGetName(NULL),"_lat1=%s _lat2=%s _lon1=%s _lon2=%s", rmcBuf._lat1, rmcBuf._lat2, rmcBuf._lon1, rmcBuf._lon2);
 				if (strlen((char *)rmcBuf._lat1) == 0) {
 					lcdDrawFillRect(&dev, xlatlon, 0, SCREEN_WIDTH-1, fontHeight-1, BLACK);
 					strcpy((char *)ascii, "Signal OFF");
@@ -573,7 +574,7 @@ void tft(void *pvParameters)
 					strcpy((char *)ascii, "Signal ON");
 					lcdDrawString(&dev, fxG, xlatlon, fontHeight-1, ascii, RED);
 				}
-				ESP_LOGD(pcTaskGetTaskName(0), "uart payload=[%s]", cmdBuf.payload);
+				ESP_LOGD(pcTaskGetName(NULL), "uart payload=[%s]", cmdBuf.payload);
 				if (isRecord) {
 					writeLog(&log, cmdBuf.payload, cmdBuf.length);
 					color = BLUE;
@@ -582,7 +583,7 @@ void tft(void *pvParameters)
 			if (cmdBuf.command == CMD_TIMER) {
 				if (!readLog(&log, cmdBuf.payload, &cmdBuf.length, MAX_PAYLOAD)) {
 					if (log.mode == CMD_START_PLAYBACK_ONCE) continue;
-					ESP_LOGI(pcTaskGetTaskName(0), "rewind file");
+					ESP_LOGI(pcTaskGetName(NULL), "rewind file");
 					rewind(log.f);
 					readLog(&log, cmdBuf.payload, &cmdBuf.length, MAX_PAYLOAD);
 				}
@@ -709,8 +710,8 @@ void app_main()
 	xTaskCreate(uart_event_task, "uart_event", 1024*4, NULL, 5, NULL);
 
 	// Create timer
-	TimerHandle_t xTimer = xTimerCreate("TIMER", CONFIG_PLAYBACK_PERIOD / portTICK_RATE_MS, true, NULL, send_timercb);
-	//TimerHandle_t xTimer = xTimerCreate("TIMER", 1000 / portTICK_RATE_MS, true, NULL, send_timercb);
+	TimerHandle_t xTimer = xTimerCreate("TIMER", CONFIG_PLAYBACK_PERIOD / portTICK_PERIOD_MS, true, NULL, send_timercb);
+	//TimerHandle_t xTimer = xTimerCreate("TIMER", 1000 / portTICK_PERIOD_MS, true, NULL, send_timercb);
 	xTimerStart(xTimer, 0);
 
 }
